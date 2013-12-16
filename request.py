@@ -39,5 +39,15 @@ class RequestCommand(sublime_plugin.WindowCommand):
         # If we should save result to clipboard, save it
         if save_to_clipboard:
             # DEV: For Sublime Text 3 support, we must coerce result from bytes into a string
-            sublime.set_clipboard(str(result))
+            sublime.set_clipboard(unicode(result, errors='ignore'))
             sublime.status_message('Saved result from "%s" to clipboard' % url)
+        
+        # If we want to insert directly the content of the response in the current view
+        if insert_in_current_view:
+            view = sublime.active_window().active_view()
+            edit = view.begin_edit()
+            for region in view.sel():
+                view.replace(edit, region, unicode(result, errors='ignore'))
+                view.end_edit(edit)
+        
+        
