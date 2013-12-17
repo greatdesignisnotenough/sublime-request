@@ -1,4 +1,4 @@
-# sublime-request
+# sublime-request - Forked from twolfson/sublime-request
 
 Make HTTP requests from [Sublime Text][subl].
 
@@ -58,6 +58,11 @@ You now have `alt+x` bound to download [http://google.com/][google] to your clip
 - `read_args` - List of arguments to pass to `request.read`
 - `read_kwargs` - Dictionary of keyword arguments to pass to `request.read`
 - `save_to_clipboard` - Copies result from `read` to clipboard
+- `insert_in_current_view` - Paste the result immediately at the cursor position
+- `selection_request` - Append the current selected word to the request, POST is not possible in this mode
+- `decode_as` - The response is parsed using the following : `str` / `unicode` / `unicode_tolerant` / `json`
+- `json_key` - When used with the decoder `json`, the response will contain the value associated with the key. See the MD5 example
+
 
 ### I don't know Python
 This is a fact of life. Rather than creating a meta language to be just as simple, I will show you some commmon examples to draw from.
@@ -115,6 +120,23 @@ Copy the first 100 characters of Lorem Ipsum to your clipboard via a key binding
     "save_to_clipboard": true
   }
 }
+```
+
+### Perform a md5 hash of the current word selected
+```
+{
+	  "keys": ["alt+m"],
+	  "command": "request",
+	  "args": {
+	    "open_args": ["http://md5.jsontest.com/?text="],
+	    "save_to_clipboard": false,
+	    "selection_request" : true,
+	    "insert_in_current_view" : true,
+	    "decode_as" : "json",
+	    "json_key" : "md5",
+	    "selection_request" : true
+	  }
+	}
 ```
 
 ## FAQ
