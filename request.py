@@ -14,7 +14,7 @@ except ImportError:
 class RequestCommand(sublime_plugin.WindowCommand):
     def run(self, open_args=[], open_kwargs={},
             read_args=[], read_kwargs={},
-            save_to_clipboard=False, insert_in_current_view=False):
+            save_to_clipboard=False, insert_in_current_view=False, decode_as='str'):
         # Make the request as requested
         url = open_args[0] or open_kwargs.get('url', None)
 
@@ -35,14 +35,11 @@ class RequestCommand(sublime_plugin.WindowCommand):
         # Read in the result and update the user
         result = req.read(*read_args, **read_kwargs)
         sublime.status_message('Successfully read from "%s"' % url)
-        
-        # Create a string from the result
-        try:
-            result_string = unicode(result, errors='strict')
-        except UnicodeDecodeError:
-            result_string = u'>>>WARNING: Non printable characters within response<<<\n\n'
-            result_string += unicode(result, errors='ignore')
 
+        # This might need to be self.__class__.decoders
+        decoder = self.decoders[decode_as]
+        result_string = decoder(result)
+        
         # If we should save result to clipboard, save it
         if save_to_clipboard:
             # DEV: For Sublime Text 3 support, we must coerce result from bytes into a string
@@ -57,5 +54,15 @@ class RequestCommand(sublime_plugin.WindowCommand):
                 for region in view.sel():
                     view.replace(edit, region, result_string)
                 view.end_edit(edit)
-        
-        
+
+    # Define a collection of decoders
+    decoders = {}
+    
+    @classmethod
+    def add_decoder(cls, name, fn):
+        cls.decoders[name] = fn
+
+# Add in decoders
+RequestCommand.add_decoder('str', str)
+RequestCommand.add_decoder('unicode', unicode)
+RequestCommand.add_decoder('unicode_tolerant', lambda x: unicode(x, errors='ignore'))
